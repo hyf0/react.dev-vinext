@@ -118,6 +118,50 @@ function trimEslintCoreRulesPlugin() {
   };
 }
 
+// The `vinext dev` SSR module runner inlines node_modules through Vite's
+// ESModulesEvaluator (vinext forces ssr.noExternal for the Workers target), and
+// that evaluator runs code in a strict ESM scope with no `require`/`module`/
+// `exports`. So pure-CJS/UMD deps throw `exports is not defined` etc. and CRASH
+// the dev server (fatal), one at a time. react.dev's per-request MDX compile
+// chain (getStaticProps -> compileMDX -> remark/retext/babel/metro-cache) plus a
+// few client components pull in exactly these old CJS packages. Pre-bundling
+// them (optimizeDeps) runs them through rolldown's CJS->ESM wrapping so the
+// runner gets clean ESM. DEV-ONLY: optimizeDeps does not affect the build, so
+// the Cloudflare deploy is unchanged. Upstream: cloudflare/vinext#585 (PR #665).
+const devCjsDeps = [
+  // per-request MDX compile chain (src/utils/compileMDX.ts + plugins/markdownToHtml.js)
+  'metro-cache',
+  '@babel/core',
+  'gray-matter',
+  'unist-util-visit',
+  'mdast-util-to-string',
+  'github-slugger',
+  'remark',
+  'remark-html',
+  'remark-external-links',
+  'remark-images',
+  'remark-unwrap-images',
+  'remark-gfm',
+  'remark-frontmatter',
+  'retext',
+  'retext-smartypants',
+  '@mdx-js/mdx',
+  'rss', // generateRssFeed() runs in getStaticProps (src/utils/rss.js)
+  // CJS/UMD deps used by components rendered during SSR
+  'classnames',
+  'debounce',
+  'parse-numeric-range',
+  // Leaf CJS utils pulled in (transitively) by @codesandbox/sandpack-react's
+  // console/ANSI rendering. NOTE: only these leaf utils are listed — do NOT
+  // pre-bundle @codesandbox/sandpack-react itself, as that bundles a second copy
+  // of React and breaks SandpackProvider's hooks during SSR ("Invalid hook
+  // call"). These two have no React dependency, so they're safe to pre-bundle.
+  'anser',
+  'escape-carriage',
+  // config-time CJS pulled in when the module runner loads tailwind.config.mjs
+  'tailwindcss/defaultTheme',
+];
+
 export default defineConfig({
   plugins: [
     vinext(),
@@ -156,17 +200,15 @@ export default defineConfig({
         '.js': 'jsx',
       },
     },
-    // Force-pre-bundle UMD/CJS deps whose `module.exports` lives inside an IIFE
-    // (rolldown's CJS interop misses them, so under SSR they fall through to a
-    // browser-global branch: `window is not defined`). Pre-bundling runs them
-    // through esbuild/rolldown CJS->ESM wrapping reliably.
-    include: ['classnames'],
+    // Force-pre-bundle the pure-CJS/UMD deps the dev SSR module runner would
+    // otherwise inline and crash on (see devCjsDeps above).
+    include: devCjsDeps,
   },
   ssr: {
-    // Same deps must be optimized for the SSR/RSC environments (vinext bundles
-    // server deps with noExternal, and the dev module runner inlines them).
+    // This is the one that actually matters: the crash happens in the dev SSR
+    // module runner, so the SSR environment must pre-bundle the same CJS deps.
     optimizeDeps: {
-      include: ['classnames'],
+      include: devCjsDeps,
     },
   },
 });
