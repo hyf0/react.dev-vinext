@@ -9,6 +9,11 @@
  * Copyright (c) Facebook, Inc. and its affiliates.
  */
 
+// react.dev keeps its redirects in vercel.json, applied by Vercel's edge.
+// vinext does not run that edge, so re-express them through next.config
+// redirects() below (which vinext honors).
+const vercelRedirects = require('./vercel.json').redirects;
+
 /**
  * @type {import('next').NextConfig}
  **/
@@ -42,6 +47,27 @@ const nextConfig = {
         },
       ],
     };
+  },
+  async redirects() {
+    // Mirror all of vercel.json's redirects (51 entries) so the legacy/short
+    // (/link/*, /docs/*, /reference, ...) paths 308/307 instead of 404ing.
+    return vercelRedirects.map((r) => ({
+      source: r.source,
+      destination: r.destination,
+      permanent: Boolean(r.permanent),
+    }));
+  },
+  async headers() {
+    // vercel.json's only headers rule: immutable long-cache for self-hosted
+    // fonts. vercel.json used a raw regex source; translate to path-to-regexp.
+    return [
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {key: 'Cache-Control', value: 'public, max-age=31536000, immutable'},
+        ],
+      },
+    ];
   },
   env: {},
   webpack: (config, {dev, isServer, ...options}) => {
