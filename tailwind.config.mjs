@@ -9,10 +9,10 @@
  * Copyright (c) Facebook, Inc. and its affiliates.
  */
 
-const defaultTheme = require('tailwindcss/defaultTheme');
-const colors = require('./colors');
+import defaultTheme from 'tailwindcss/defaultTheme';
+import colors from './colors.js';
 
-module.exports = {
+export default {
   content: [
     './src/components/**/*.{js,ts,jsx,tsx}',
     './src/pages/**/*.{js,ts,jsx,tsx}',

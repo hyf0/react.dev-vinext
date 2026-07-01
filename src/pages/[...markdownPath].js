@@ -111,7 +111,9 @@ export async function getStaticProps(context) {
   const rootDir = process.cwd() + '/src/content/';
 
   // Read MDX from the file.
-  let path = (context.params.markdownPath || []).join('/') || 'index';
+  // `context.params` is null for the static '/' route (src/pages/index.js
+  // re-exports this getStaticProps); the catch-all passes {markdownPath: [...]}.
+  let path = (context.params?.markdownPath || []).join('/') || 'index';
   let mdx;
   try {
     mdx = fs.readFileSync(rootDir + path + '.md', 'utf8');
@@ -183,6 +185,12 @@ export async function getStaticPaths() {
       },
     }))
     .filter((entry) => {
+      // The root path (src/content/index.md → markdownPath []) is served by
+      // src/pages/index.js. A *required* catch-all [...markdownPath] cannot
+      // accept empty params, so drop it here. (Upstream used the *optional*
+      // catch-all [[...markdownPath]] to also own '/', but vinext does not
+      // serve the optional catch-all's empty-params root — it 404s.)
+      if (entry.params.markdownPath.length === 0) return false;
       if (process.env.NODE_ENV !== 'production') return true;
       const pagePath = entry.params.markdownPath.join('/');
       return !devOnlyPages.has(pagePath);

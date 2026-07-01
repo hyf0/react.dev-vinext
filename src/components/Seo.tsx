@@ -131,63 +131,63 @@ export const Seo = withRouter(
         )}
         <link
           rel="preload"
-          href="https://react.dev/fonts/Source-Code-Pro-Regular.woff2"
+          href="/fonts/Source-Code-Pro-Regular.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="https://react.dev/fonts/Source-Code-Pro-Bold.woff2"
+          href="/fonts/Source-Code-Pro-Bold.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="https://react.dev/fonts/Optimistic_Display_W_Md.woff2"
+          href="/fonts/Optimistic_Display_W_Md.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="https://react.dev/fonts/Optimistic_Display_W_SBd.woff2"
+          href="/fonts/Optimistic_Display_W_SBd.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="https://react.dev/fonts/Optimistic_Display_W_Bd.woff2"
+          href="/fonts/Optimistic_Display_W_Bd.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="https://react.dev/fonts/Optimistic_Text_W_Md.woff2"
+          href="/fonts/Optimistic_Text_W_Md.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="https://react.dev/fonts/Optimistic_Text_W_Bd.woff2"
+          href="/fonts/Optimistic_Text_W_Bd.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="https://react.dev/fonts/Optimistic_Text_W_Rg.woff2"
+          href="/fonts/Optimistic_Text_W_Rg.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="https://react.dev/fonts/Optimistic_Text_W_It.woff2"
+          href="/fonts/Optimistic_Text_W_It.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"

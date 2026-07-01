@@ -9,7 +9,7 @@
  * Copyright (c) Facebook, Inc. and its affiliates.
  */
 
-import {useEffect} from 'react';
+import {StrictMode, useEffect} from 'react';
 import {AppProps} from 'next/app';
 import {useRouter} from 'next/router';
 
@@ -61,5 +61,12 @@ export default function MyApp({Component, pageProps}: AppProps) {
     };
   }, [router.events]);
 
-  return <Component {...pageProps} />;
+  // next.config.js sets reactStrictMode:true, but vinext recognizes the option
+  // without injecting the wrapper, so wrap the tree explicitly to preserve the
+  // intended dev-time checks (no-op in production).
+  return (
+    <StrictMode>
+      <Component {...pageProps} />
+    </StrictMode>
+  );
 }

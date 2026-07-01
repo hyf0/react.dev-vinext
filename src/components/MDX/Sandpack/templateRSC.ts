@@ -7,6 +7,20 @@
 
 import type {SandpackFiles} from '@codesandbox/sandpack-react/unstyled';
 
+// Load RSC infrastructure files as raw strings. The upstream code used webpack's
+// inline `!raw-loader?esModule=false!` syntax; under Vite/vinext (no webpack) the
+// equivalent is the `?raw` query, whose default export is the file's text.
+// The two node_modules files keep their explicit relative paths to bypass the
+// packages' `exports` maps (the deep CJS subpaths aren't publicly exported).
+import webpackShimRaw from './sandpack-rsc/sandbox-code/src/webpack-shim.js?raw';
+import rscClientRaw from './sandpack-rsc/sandbox-code/src/rsc-client.js?raw';
+import reactRefreshInitRaw from './sandpack-rsc/sandbox-code/src/__react_refresh_init__.js?raw';
+import workerBundleRaw from './sandpack-rsc/sandbox-code/src/worker-bundle.dist.js?raw';
+// eslint-disable-next-line import/no-relative-packages
+import rsdwClientRaw from '../../../../node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.production.js?raw';
+// eslint-disable-next-line import/no-relative-packages
+import reactRefreshRuntimeRaw from '../../../../node_modules/next/dist/compiled/react-refresh/cjs/react-refresh-runtime.development.js?raw';
+
 function hideFiles(files: SandpackFiles): SandpackFiles {
   return Object.fromEntries(
     Object.entries(files).map(([name, code]) => [
@@ -16,25 +30,18 @@ function hideFiles(files: SandpackFiles): SandpackFiles {
   );
 }
 
-// --- Load RSC infrastructure files as raw strings via raw-loader ---
+// --- RSC infrastructure files as raw strings (loaded via `?raw` imports above) ---
 const RSC_SOURCE_FILES = {
-  'webpack-shim':
-    require('!raw-loader?esModule=false!./sandpack-rsc/sandbox-code/src/webpack-shim.js') as string,
-  'rsc-client':
-    require('!raw-loader?esModule=false!./sandpack-rsc/sandbox-code/src/rsc-client.js') as string,
-  'react-refresh-init':
-    require('!raw-loader?esModule=false!./sandpack-rsc/sandbox-code/src/__react_refresh_init__.js') as string,
-  'worker-bundle': `export default ${JSON.stringify(
-    require('!raw-loader?esModule=false!./sandpack-rsc/sandbox-code/src/worker-bundle.dist.js') as string
-  )};`,
-  'rsdw-client':
-    require('!raw-loader?esModule=false!../../../../node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.production.js') as string,
+  'webpack-shim': webpackShimRaw,
+  'rsc-client': rscClientRaw,
+  'react-refresh-init': reactRefreshInitRaw,
+  'worker-bundle': `export default ${JSON.stringify(workerBundleRaw)};`,
+  'rsdw-client': rsdwClientRaw,
 };
 
 // Load react-refresh runtime and strip the process.env.NODE_ENV guard
 // so it works in Sandpack's bundler which may not replace process.env.
-const reactRefreshRaw =
-  require('!raw-loader?esModule=false!../../../../node_modules/next/dist/compiled/react-refresh/cjs/react-refresh-runtime.development.js') as string;
+const reactRefreshRaw = reactRefreshRuntimeRaw;
 
 // Wrap as a CJS module that Sandpack can require.
 // Strip the `if (process.env.NODE_ENV !== "production")` guard so the
